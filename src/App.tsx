@@ -1,24 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Login from "./Login";
 import { auth, provider, signInWithPopup } from "./firebase";
 import TaskList from "./TaskBuddy/TaskList";
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import "./App.css";
 
 function App() {
   const [state, setState] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState();
   const signInWithGoogle = async () => {
     try {
+      setLoading(true);
       const result = await signInWithPopup(auth, provider);
-      // capture user details in result which can be used later
-      // result- will use later
-      if (auth.currentUser) setState(true);
+      console.log(result);
+      setLoading(false);
+      setState(true);
+
+      if (auth.currentUser) setName(auth.currentUser?.displayName);
     } catch (error) {
       console.error("Error signing in with Google", error);
     }
   };
   const handleLogout = () => {
-    const auth = getAuth();
+    // const auth = getAuth();
+    setLoading(false);
     console.log(auth);
     signOut(auth)
       .then(() => {
@@ -28,11 +34,30 @@ function App() {
         console.log(error);
       });
   };
+  useEffect(() => {
+    setLoading(true);
+    setState(true);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log(user, "user");
+      if (user) {
+        setName(user?.displayName);
+        setState(true);
+        setLoading(false);
+      } else {
+        setState(false);
+        setLoading(false);
+      }
+    });
 
+    return () => unsubscribe(); // Clean up the listener
+  }, []);
+  console.log(loading, state, auth.currentUser?.displayName);
   return (
     <>
-      {state ? (
-        <TaskList onClick={handleLogout} />
+      {loading ? (
+        <p>loading</p>
+      ) : state ? (
+        <TaskList onClick={handleLogout} name={name} />
       ) : (
         <Login onClick={signInWithGoogle} />
       )}

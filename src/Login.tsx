@@ -17,11 +17,11 @@ export default function Login({ onClick }) {
 
             <h3 style={{ color: "#7B1984" }}>TaskBuddy</h3>
           </div>
-          <p>
+          <p className="login-para">
             Streamline your workflow and track progress effortlessly with our
             all-in-one task management app.
           </p>
-          <button onClick={onClick}>
+          <button onClick={onClick} className="login-button">
             <img src={image} style={{ width: "15px", height: "15px" }} />
             Continue with Google
           </button>
